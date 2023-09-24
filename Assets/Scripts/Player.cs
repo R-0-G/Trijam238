@@ -1,4 +1,5 @@
 using System;
+using System.Security.Cryptography.X509Certificates;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,8 +14,9 @@ public class Player : MonoBehaviour
     [SerializeField] private GameObject pushAnim;
     [SerializeField] private GameObject pullAnim;
     [SerializeField] private Rigidbody2D ball;
+    [SerializeField] private AudioSource ballAudio;
     [SerializeField] private GameObject alreadyWon;
-   
+
     private float stamina = 1f;
     private bool recoverStamina = false;
     private float forceToUse = 0f;
@@ -38,6 +40,7 @@ public class Player : MonoBehaviour
         {
             alreadyWon.SetActive(true);
             Destroy(this.gameObject);
+
         }
     }
 
@@ -47,9 +50,17 @@ public class Player : MonoBehaviour
         {
             active = true;
             ball.isKinematic = false;
-            staminaSlider.gameObject.SetActive(stamina<1f);
+            staminaSlider.gameObject.SetActive(stamina < 1f);
             staminaSlider.value = stamina;
             forceToUse = force;
+            if (ball.velocity.magnitude == 0 || ball.velocity.magnitude < 0)
+            {
+                ballAudio.volume = 0;
+            }
+            else
+            {
+                ballAudio.volume = 1;
+            }
             if (stamina <= 0f)
             {
                 forceToUse = staminaLostForce;
@@ -59,17 +70,20 @@ public class Player : MonoBehaviour
                 pullAnim.SetActive(true);
                 pushAnim.SetActive(false);
                 rb2d.AddForce(Vector2.left * forceToUse * Time.deltaTime);
+
             }
             else if (Input.GetKey((KeyCode.D)))
             {
                 pullAnim.SetActive(false);
                 pushAnim.SetActive(true);
                 rb2d.AddForce(Vector2.right * forceToUse * Time.deltaTime);
+
             }
             else
             {
                 pullAnim.SetActive(false);
                 pushAnim.SetActive(true);
+
             }
         }
         else
@@ -102,28 +116,29 @@ public class Player : MonoBehaviour
                 stamina = 1f;
             }
         }
-        else if ( !recoverStamina && stamina > 0f)
+        else if (!recoverStamina && stamina > 0f)
         {
-            
+
             stamina -= staminaLossRate * Time.fixedDeltaTime;
             if (stamina < 0f)
             {
                 stamina = 0f;
             }
         }
+
     }
 
     private void OnCollisionEnter2D(Collision2D other)
     {
-        if (other.gameObject.name =="Ball")
+        if (other.gameObject.name == "Ball")
         {
             recoverStamina = false;
         }
     }
-    
+
     private void OnCollisionExit2D(Collision2D other)
     {
-        if (other.gameObject.name =="Ball")
+        if (other.gameObject.name == "Ball")
         {
             recoverStamina = true;
         }

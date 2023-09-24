@@ -11,7 +11,7 @@ public class Chain : MonoBehaviour
 
     [SerializeField] private float minDist = 0.5f;
     [SerializeField] private float maxDist = 2f;
-    
+
     private void Update()
     {
         Transform target = chainEnd.gameObject.activeInHierarchy ? chainEnd : chainEnd2;
@@ -23,11 +23,12 @@ public class Chain : MonoBehaviour
         {
             if (Game.gameActive)
             {
+
                 Game.TriggerGameStop();
             }
         }
-        
-        transform.localScale = new Vector3(transform.localScale.x, transform.localScale.y,size);
-        
+
+        transform.localScale = new Vector3(transform.localScale.x, transform.localScale.y, size);
+
     }
 }

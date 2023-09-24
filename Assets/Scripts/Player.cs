@@ -8,6 +8,8 @@ public class Player : MonoBehaviour
 {
     [SerializeField] private Rigidbody2D rb2d;
     [SerializeField] private float force;
+    [SerializeField] private float ballPushForce;
+    [SerializeField] private float staminaLostBallPushForce;
     [SerializeField] private float staminaLostForce;
     [SerializeField] private float staminaLossRate;
     [SerializeField] private float staminaRecoveryRate;
@@ -24,6 +26,7 @@ public class Player : MonoBehaviour
     private float stamina = 1f;
     private bool recoverStamina = false;
     private float forceToUse = 0f;
+    private float ballForceToUse = 0f;
 
     private Vector3 initialPosition;
     private Vector3 ballPosition;
@@ -87,6 +90,9 @@ public class Player : MonoBehaviour
 
         yield return new WaitForSeconds(pauseDuration);
         
+        transform.position = initialPosition;
+        ball.transform.position = ballPosition;
+        
         for (int i = 0; i < ragdollComponents.Length; i++)
         {
             ragdollComponents[i].isKinematic = true;
@@ -107,9 +113,11 @@ public class Player : MonoBehaviour
             staminaSlider.gameObject.SetActive(stamina<1f);
             staminaSlider.value = stamina;
             forceToUse = force;
+            ballForceToUse = ballPushForce;
             if (stamina <= 0f)
             {
                 forceToUse = staminaLostForce;
+                ballForceToUse = staminaLostBallPushForce;
             }
             if (Input.GetKey((KeyCode.A)))
             {
@@ -117,7 +125,7 @@ public class Player : MonoBehaviour
                 pullAnim.SetActive(true);
                 pushAnim.SetActive(false);
                 rb2d.AddForce(Vector2.right * forceToUse * Time.deltaTime);
-                ball.AddForce(Vector2.right * forceToUse * Time.deltaTime);
+                ball.AddForce(Vector2.right * ballForceToUse * Time.deltaTime);
             }
             else if (Input.GetKey((KeyCode.D)) && inContact)
             {
@@ -125,7 +133,7 @@ public class Player : MonoBehaviour
                 pullAnim.SetActive(false);
                 pushAnim.SetActive(true);
                 rb2d.AddForce(Vector2.left * forceToUse * Time.deltaTime);
-                ball.AddForce(Vector2.left * forceToUse * Time.deltaTime);
+                ball.AddForce(Vector2.left * ballForceToUse * Time.deltaTime);
             }
             else
             {

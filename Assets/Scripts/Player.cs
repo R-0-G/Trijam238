@@ -10,15 +10,43 @@ public class Player : MonoBehaviour
     [SerializeField] private float staminaLossRate;
     [SerializeField] private float staminaRecoveryRate;
     [SerializeField] private Slider staminaSlider;
+    [SerializeField] private GameObject pushAnim;
+    [SerializeField] private GameObject pullAnim;
+    [SerializeField] private Rigidbody2D ball;
+    [SerializeField] private GameObject alreadyWon;
    
     private float stamina = 1f;
     private bool recoverStamina = false;
     private float forceToUse = 0f;
+
+    private Vector3 initialPosition;
+    private Vector3 ballPosition;
+    private bool active = false;
+
+    [ContextMenu("ClearPlayerprefs")]
+    public void ResetPlayerprefs()
+    {
+        PlayerPrefs.DeleteAll();
+    }
+
+    private void Awake()
+    {
+        initialPosition = transform.position;
+        ballPosition = ball.transform.position;
+
+        if (PlayerPrefs.GetInt("WON", 0) == 1)
+        {
+            alreadyWon.SetActive(true);
+            Destroy(this.gameObject);
+        }
+    }
+
     private void Update()
     {
-        
         if (Game.gameActive)
         {
+            active = true;
+            ball.isKinematic = false;
             staminaSlider.gameObject.SetActive(stamina<1f);
             staminaSlider.value = stamina;
             forceToUse = force;
@@ -28,15 +56,32 @@ public class Player : MonoBehaviour
             }
             if (Input.GetKey((KeyCode.A)))
             {
+                pullAnim.SetActive(true);
+                pushAnim.SetActive(false);
                 rb2d.AddForce(Vector2.left * forceToUse * Time.deltaTime);
             }
-            if (Input.GetKey((KeyCode.D)))
+            else if (Input.GetKey((KeyCode.D)))
             {
+                pullAnim.SetActive(false);
+                pushAnim.SetActive(true);
                 rb2d.AddForce(Vector2.right * forceToUse * Time.deltaTime);
+            }
+            else
+            {
+                pullAnim.SetActive(false);
+                pushAnim.SetActive(true);
             }
         }
         else
         {
+            if (active)
+            {
+                transform.position = initialPosition;
+                ball.transform.position = ballPosition;
+            }
+            ball.isKinematic = true;
+            pullAnim.SetActive(false);
+            pushAnim.SetActive(true);
             staminaSlider.gameObject.SetActive(false);
             stamina = 1f;
             if (Input.GetKeyDown(KeyCode.Space))

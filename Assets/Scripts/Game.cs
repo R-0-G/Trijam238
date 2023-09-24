@@ -19,6 +19,8 @@ public static class Game
     
     public static void TriggerGameWin()
     {
+        TriggerGameStop();
+        PlayerPrefs.SetInt("WON" ,1);
         onGameWin?.Invoke();
     }
 

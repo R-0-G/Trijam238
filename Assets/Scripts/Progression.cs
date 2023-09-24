@@ -10,6 +10,7 @@ public class Progression : MonoBehaviour
     [SerializeField] private Transform endTrans;
     [SerializeField] private Transform startTrans;
     [SerializeField] private TextMeshProUGUI text;
+    [SerializeField] private float threshold = 0.01f;
 
     private bool start =  false;
     private float fullDistance;
@@ -22,6 +23,11 @@ public class Progression : MonoBehaviour
     private void Update()
     {
         Game.progression = 1f-Mathf.Clamp01(Vector2.Distance(playerTrans.position, endTrans.position) / fullDistance);
-        text.text = Game.progression * 100f + "% Progression";
+        text.text = Mathf.FloorToInt(Game.progression * 100f) + "% Progression";
+
+        if (Mathf.Abs(Game.progression - 1f) < threshold)
+        {
+            Game.TriggerGameWin();
+        }
     }
 }

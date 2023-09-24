@@ -11,7 +11,7 @@
 /[Uu]ser[Ss]ettings/
 
 # prevent assets from being added to block dowloaded assets ending up in git history 
-/[Aa]ssets/
+# /[Aa]ssets/
 
 # MemoryCaptures can get excessive in size.
 # They also could contain extremely sensitive data

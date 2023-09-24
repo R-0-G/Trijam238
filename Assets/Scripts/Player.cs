@@ -19,6 +19,7 @@ public class Player : MonoBehaviour
     [SerializeField] private float deathMagnitude = 2f;
     [SerializeField] private float pauseDuration = 2f;
     [SerializeField] private Rigidbody[] ragdollComponents;
+    [SerializeField] private AudioSource ballAudio;
    
     private float stamina = 1f;
     private bool recoverStamina = false;

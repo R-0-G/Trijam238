@@ -4,6 +4,8 @@ using UnityEngine;
 
 public static class Game
 {
+
+
     public delegate void GameEvent();
     public delegate void MessageEvent(string msg);
     public delegate void MessageAudioEvent(string msg, AudioClip clip);
@@ -14,14 +16,14 @@ public static class Game
     public static event GameEvent onGameWin;
     public static event MessageEvent onMessage;
     public static event MessageAudioEvent onComplain;
-    
+
     public static bool gameActive = false;
     public static float progression = 0f;
-    
+
     public static void TriggerGameWin()
     {
         TriggerGameStop();
-        PlayerPrefs.SetInt("WON" ,1);
+        PlayerPrefs.SetInt("WON", 1);
         onGameWin?.Invoke();
     }
 
@@ -31,13 +33,13 @@ public static class Game
         progression = 0f;
         onGameStart?.Invoke();
     }
-    
+
     public static void TriggerGameStop()
     {
         gameActive = false;
         onGameStop?.Invoke();
     }
-    
+
     public static void TriggerBeginGameStop()
     {
         // gameActive = false;
@@ -48,7 +50,7 @@ public static class Game
     {
         onMessage?.Invoke(message);
     }
-    
+
     public static void TriggerComplaint(string message, AudioClip clip)
     {
         onComplain?.Invoke(message, clip);

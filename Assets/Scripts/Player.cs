@@ -22,7 +22,8 @@ public class Player : MonoBehaviour
     [SerializeField] private float pauseDuration = 2f;
     [SerializeField] private Rigidbody[] ragdollComponents;
     [SerializeField] private AudioSource ballAudio;
-   
+    [SerializeField] private AudioSource deathAudioSource;
+
     private float stamina = 1f;
     private bool recoverStamina = false;
     private float forceToUse = 0f;
@@ -64,7 +65,7 @@ public class Player : MonoBehaviour
     private void OnDestroy()
     {
         Game.onBeginGameStop -= HandleBeginGameStop;
-        
+
     }
 
     private void HandleBeginGameStop()
@@ -72,6 +73,7 @@ public class Player : MonoBehaviour
         if (!isStopping)
         {
             StartCoroutine(DoStopGame());
+            deathAudioSource.Play();
         }
     }
 
@@ -79,7 +81,7 @@ public class Player : MonoBehaviour
 
     private IEnumerator DoStopGame()
     {
-        
+
         isStopping = true;
         pullAnim.SetActive(false);
         pushAnim.SetActive(true);
@@ -89,19 +91,19 @@ public class Player : MonoBehaviour
         }
 
         yield return new WaitForSeconds(pauseDuration);
-        
+
         transform.position = initialPosition;
         ball.transform.position = ballPosition;
-        
+
         for (int i = 0; i < ragdollComponents.Length; i++)
         {
             ragdollComponents[i].isKinematic = true;
             ragdollComponents[i].transform.rotation = Quaternion.Euler(rotations[i]);
             ragdollComponents[i].transform.position = positions[i];
         }
-        
+
         Game.TriggerGameStop();
-        
+
     }
 
     private void Update()
@@ -110,7 +112,7 @@ public class Player : MonoBehaviour
         {
             active = true;
             ball.isKinematic = false;
-            staminaSlider.gameObject.SetActive(stamina<1f);
+            staminaSlider.gameObject.SetActive(stamina < 1f);
             staminaSlider.value = stamina;
             forceToUse = force;
             ballForceToUse = ballPushForce;
@@ -171,7 +173,7 @@ public class Player : MonoBehaviour
                 stamina = 1f;
             }
         }
-        else if ( !recoverStamina && stamina > 0f)
+        else if (!recoverStamina && stamina > 0f)
         {
             stamina -= staminaLossRate * Time.fixedDeltaTime;
             if (stamina < 0f)
@@ -185,21 +187,22 @@ public class Player : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D other)
     {
-        if (other.gameObject.name =="Ball")
+        if (other.gameObject.name == "Ball")
         {
             inContact = true;
             Debug.LogError(other.relativeVelocity.magnitude);
             if (other.relativeVelocity.magnitude > deathMagnitude)
             {
                 Game.TriggerBeginGameStop();
+
             }
         }
     }
-    
+
 
     private void OnCollisionExit2D(Collision2D other)
     {
-        if (other.gameObject.name =="Ball")
+        if (other.gameObject.name == "Ball")
         {
             inContact = false;
         }

@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,6 +16,9 @@ public class Player : MonoBehaviour
     [SerializeField] private GameObject pullAnim;
     [SerializeField] private Rigidbody2D ball;
     [SerializeField] private GameObject alreadyWon;
+    [SerializeField] private float deathMagnitude = 2f;
+    [SerializeField] private float pauseDuration = 2f;
+    [SerializeField] private Rigidbody[] ragdollComponents;
    
     private float stamina = 1f;
     private bool recoverStamina = false;
@@ -23,6 +28,9 @@ public class Player : MonoBehaviour
     private Vector3 ballPosition;
     private bool active = false;
 
+    private List<Vector3> rotations = new List<Vector3>();
+    private List<Vector3> positions = new List<Vector3>();
+
     [ContextMenu("ClearPlayerprefs")]
     public void ResetPlayerprefs()
     {
@@ -31,14 +39,62 @@ public class Player : MonoBehaviour
 
     private void Awake()
     {
+        Game.onBeginGameStop += HandleBeginGameStop;
         initialPosition = transform.position;
         ballPosition = ball.transform.position;
+
+        for (int i = 0; i < ragdollComponents.Length; i++)
+        {
+            rotations.Add(ragdollComponents[i].transform.rotation.eulerAngles);
+            positions.Add(ragdollComponents[i].transform.position);
+            ragdollComponents[i].isKinematic = true;
+        }
 
         if (PlayerPrefs.GetInt("WON", 0) == 1)
         {
             alreadyWon.SetActive(true);
             Destroy(this.gameObject);
         }
+    }
+
+    private void OnDestroy()
+    {
+        Game.onBeginGameStop -= HandleBeginGameStop;
+        
+    }
+
+    private void HandleBeginGameStop()
+    {
+        if (!isStopping)
+        {
+            StartCoroutine(DoStopGame());
+        }
+    }
+
+    private bool isStopping = false;
+
+    private IEnumerator DoStopGame()
+    {
+        
+        isStopping = true;
+        pullAnim.SetActive(false);
+        pushAnim.SetActive(true);
+        for (int i = 0; i < ragdollComponents.Length; i++)
+        {
+            ragdollComponents[i].isKinematic = false;
+        }
+
+        yield return new WaitForSeconds(pauseDuration);
+        
+        for (int i = 0; i < ragdollComponents.Length; i++)
+        {
+            ragdollComponents[i].isKinematic = true;
+            ragdollComponents[i].transform.rotation = Quaternion.Euler(rotations[i]);
+            ragdollComponents[i].transform.position = positions[i];
+        }
+        
+        Game.TriggerGameStop();
+        
     }
 
     private void Update()
@@ -56,15 +112,19 @@ public class Player : MonoBehaviour
             }
             if (Input.GetKey((KeyCode.A)))
             {
+                recoverStamina = false;
                 pullAnim.SetActive(true);
                 pushAnim.SetActive(false);
-                rb2d.AddForce(Vector2.left * forceToUse * Time.deltaTime);
+                rb2d.AddForce(Vector2.right * forceToUse * Time.deltaTime);
+                ball.AddForce(Vector2.right * forceToUse * Time.deltaTime);
             }
-            else if (Input.GetKey((KeyCode.D)))
+            else if (Input.GetKey((KeyCode.D)) && inContact)
             {
+                recoverStamina = true;
                 pullAnim.SetActive(false);
                 pushAnim.SetActive(true);
-                rb2d.AddForce(Vector2.right * forceToUse * Time.deltaTime);
+                rb2d.AddForce(Vector2.left * forceToUse * Time.deltaTime);
+                ball.AddForce(Vector2.left * forceToUse * Time.deltaTime);
             }
             else
             {
@@ -104,7 +164,6 @@ public class Player : MonoBehaviour
         }
         else if ( !recoverStamina && stamina > 0f)
         {
-            
             stamina -= staminaLossRate * Time.fixedDeltaTime;
             if (stamina < 0f)
             {
@@ -113,19 +172,27 @@ public class Player : MonoBehaviour
         }
     }
 
+    private bool inContact;
+
     private void OnCollisionEnter2D(Collision2D other)
     {
         if (other.gameObject.name =="Ball")
         {
-            recoverStamina = false;
+            inContact = true;
+            Debug.LogError(other.relativeVelocity.magnitude);
+            if (other.relativeVelocity.magnitude > deathMagnitude)
+            {
+                Game.TriggerBeginGameStop();
+            }
         }
     }
     
+
     private void OnCollisionExit2D(Collision2D other)
     {
         if (other.gameObject.name =="Ball")
         {
-            recoverStamina = true;
+            inContact = false;
         }
     }
 }

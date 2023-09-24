@@ -23,7 +23,7 @@ public class Chain : MonoBehaviour
         {
             if (Game.gameActive)
             {
-                Game.TriggerGameStop();
+                Game.TriggerBeginGameStop();
             }
         }
         

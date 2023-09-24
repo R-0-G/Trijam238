@@ -10,6 +10,7 @@ public static class Game
 
     public static event GameEvent onGameStart;
     public static event GameEvent onGameStop;
+    public static event GameEvent onBeginGameStop;
     public static event GameEvent onGameWin;
     public static event MessageEvent onMessage;
     public static event MessageAudioEvent onComplain;
@@ -34,7 +35,13 @@ public static class Game
     public static void TriggerGameStop()
     {
         gameActive = false;
-        onGameStart?.Invoke();
+        onGameStop?.Invoke();
+    }
+    
+    public static void TriggerBeginGameStop()
+    {
+        // gameActive = false;
+        onBeginGameStop?.Invoke();
     }
 
     public static void TriggerMessage(string message)
